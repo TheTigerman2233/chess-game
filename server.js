@@ -19,34 +19,35 @@ function generateRoomCode() {
 io.on('connection', (socket) => {
   let currentRoom = null;
 
-  socket.on('create-game', ({ username }) => {
-    const roomCode = generateRoomCode();
-    rooms[roomCode] = {
-      state: { board: createInitialBoard(), turn: 'w' },
-      players: { [socket.id]: { username, color: 'w' } }
-    };
-    currentRoom = roomCode;
-    socket.join(roomCode);
-    socket.emit('joined-room', { roomCode, color: 'w' });
-    socket.emit('state-update', rooms[roomCode].state);
-  });
+socket.on('create-game', ({ username }) => {
+  const roomCode = generateRoomCode();
+  rooms[roomCode] = {
+    state: { board: createInitialBoard(), turn: 'w' },
+    players: { [socket.id]: { username, color: 'w' } }
+  };
+  currentRoom = roomCode;
+  socket.join(roomCode);
+  socket.emit('joined-room', { roomCode, color: 'w' });
+  socket.emit('state-update', rooms[roomCode].state);
+  io.to(roomCode).emit('players-update', Object.values(rooms[roomCode].players));
+});
 
-  socket.on('join-game', ({ username, roomCode }) => {
-    const room = rooms[roomCode];
-    if (!room) {
-      socket.emit('join-error', 'Room not found');
-      return;
-    }
-    const colorsTaken = Object.values(room.players).map(p => p.color);
-    const color = !colorsTaken.includes('b') ? 'b' : 'spectator';
+socket.on('join-game', ({ username, roomCode }) => {
+  const room = rooms[roomCode];
+  if (!room) {
+    socket.emit('join-error', 'Room not found');
+    return;
+  }
+  const colorsTaken = Object.values(room.players).map(p => p.color);
+  const color = !colorsTaken.includes('b') ? 'b' : 'spectator';
 
-    room.players[socket.id] = { username, color };
-    currentRoom = roomCode;
-    socket.join(roomCode);
-    socket.emit('joined-room', { roomCode, color });
-    socket.emit('state-update', room.state);
-    io.to(roomCode).emit('state-update', room.state);
-  });
+  room.players[socket.id] = { username, color };
+  currentRoom = roomCode;
+  socket.join(roomCode);
+  socket.emit('joined-room', { roomCode, color });
+  io.to(roomCode).emit('state-update', room.state);
+  io.to(roomCode).emit('players-update', Object.values(room.players));
+});
 
   socket.on('attempt-move', ({ from, to }) => {
     const room = rooms[currentRoom];
@@ -72,14 +73,17 @@ if (checkmate) io.to(currentRoom).emit('checkmate', { loserColor: room.state.tur
     io.to(currentRoom).emit('state-update', room.state);
   });
 
-  socket.on('disconnect', () => {
-    if (currentRoom && rooms[currentRoom]) {
-      delete rooms[currentRoom].players[socket.id];
-      if (Object.keys(rooms[currentRoom].players).length === 0) {
-        delete rooms[currentRoom]; // cleanup empty rooms
-      }
+ socket.on('disconnect', () => {
+  if (currentRoom && rooms[currentRoom]) {
+    delete rooms[currentRoom].players[socket.id];
+    if (Object.keys(rooms[currentRoom].players).length === 0) {
+      delete rooms[currentRoom];
+    } else {
+      io.to(currentRoom).emit('players-update', Object.values(rooms[currentRoom].players));
     }
-  });
+  }
+});
+
 });
 
 server.listen(3000, () => console.log('Chess server on http://localhost:3000'));

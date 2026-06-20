@@ -9,7 +9,9 @@
   <div id="lobby">
     <h1>Chess</h1>
     <input id="usernameInput" placeholder="Enter your username" maxlength="16">
-    <div id="lobbyButtons" style="display:none;">
+<div id="lobbyButtons" style="display:none;">
+  <p id="welcomeText"></p>
+  <button onclick="logout()" class="logout-btn">Log Out</button>
       <button onclick="createGame()">Create Game</button>
       <div class="join-row">
         <input id="roomCodeInput" placeholder="Room code" maxlength="6">
@@ -25,11 +27,11 @@
   <div id="game" style="display:none;">
     <h1>Chess</h1>
     <p id="roomCodeDisplay"></p>
+    <p id="playersDisplay"></p>
     <div id="board"></div>
     <p id="status"></p>
     <button onclick="resetGame()">Reset Game</button>
     <button onclick="location.reload()">Leave Game</button>
-    <button onclick="logout()">Log Out</button>
   </div>
 
   <audio id="moveSound" src="https://lichess1.org/assets/sound/standard/Move.mp3"></audio>

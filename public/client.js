@@ -16,6 +16,7 @@ let offlineMode = false;
 const savedUsername = localStorage.getItem('chess-username');
 if (savedUsername) {
   username = savedUsername;
+  document.getElementById('welcomeText').textContent = `Welcome back, ${savedUsername}`;
   document.getElementById('usernameInput').value = savedUsername;
   document.getElementById('lobbyButtons').style.display = 'block';
   document.getElementById('setUsernameBtn').style.display = 'none';
@@ -31,6 +32,8 @@ function setUsername() {
   }
   username = val;
   localStorage.setItem('chess-username', val); // <-- save it
+  document.getElementById('welcomeText').textContent = `Welcome back, ${savedUsername}`;
+  document.getElementById('welcomeText').textContent = `Welcome, ${val}`;
   document.getElementById('lobbyButtons').style.display = 'block';
   document.getElementById('setUsernameBtn').style.display = 'none';
   document.getElementById('usernameInput').disabled = true;
@@ -48,7 +51,8 @@ function joinGame() {
 
 function playOffline() {
   offlineMode = true;
-  myColor = 'both'; // special mode: allow moving both colors locally
+  myColor = 'both';
+  gameOver = false;
   state = { board: createInitialBoard(), turn: 'w' };
   showGameScreen('Offline Mode');
   render();
@@ -72,16 +76,14 @@ socket.on('join-error', (msg) => {
 
 socket.on('state-update', (newState) => {
   state = newState;
+  gameOver = false;
   selected = null;
   legalMoves = [];
   render();
 });
 
 socket.on('checkmate', ({ loserColor }) => {
-  if (offlineMode) {
-    document.getElementById('status').textContent = 'Checkmate!';
-    return;
-  }
+  gameOver = true;
   if (myColor === loserColor) {
     document.getElementById('status').textContent = 'Checkmate — You Lost';
   } else if (myColor === 'spectator') {
@@ -115,9 +117,13 @@ function render() {
   document.getElementById('status').textContent = `Turn: ${state.turn === 'w' ? 'White' : 'Black'}`;
 }
 
+let gameOver = false;
+
 function handleClick(r, c) {
+  if (gameOver) return; // block all moves after checkmate
+
   const piece = state.board[r][c];
-  const canMoveThisColor = offlineMode || (myColor === state.turn);
+  const canMoveThisColor = offlineMode ? true : (myColor === state.turn);
 
   if (selected) {
     const move = legalMoves.find(m => m.to[0]===r && m.to[1]===c);
@@ -125,12 +131,13 @@ function handleClick(r, c) {
       const wasCapture = state.board[r][c] !== null;
 
       if (offlineMode) {
-  makeMove(state, selected, [r, c]);
-  if (isCheckmate(state)) {
-    const loser = state.turn === 'w' ? 'White' : 'Black';
-    document.getElementById('status').textContent = `Checkmate — ${loser} lost`;
-  }
-} else {
+        makeMove(state, selected, [r, c]);
+        if (isCheckmate(state)) {
+          gameOver = true;
+          const loser = state.turn === 'w' ? 'White' : 'Black';
+          document.getElementById('status').textContent = `Checkmate — ${loser} lost`;
+        }
+      } else {
         socket.emit('attempt-move', { from: selected, to: [r, c] });
       }
 
@@ -145,7 +152,8 @@ function handleClick(r, c) {
     selected = null; legalMoves = [];
   }
 
-  if (piece && canMoveThisColor && (offlineMode || piece.color === myColor)) {
+  // KEY FIX: even in offline mode, only allow selecting the piece whose TURN it is
+  if (piece && canMoveThisColor && piece.color === state.turn) {
     selected = [r, c];
     legalMoves = getLegalMoves(state.board, r, c, state);
   }
@@ -153,6 +161,7 @@ function handleClick(r, c) {
 }
 
 function resetGame() {
+  gameOver = false;
   if (offlineMode) {
     state = { board: createInitialBoard(), turn: 'w' };
     render();
@@ -165,3 +174,11 @@ function logout() {
   localStorage.removeItem('chess-username');
   location.reload();
 }
+
+socket.on('players-update', (players) => {
+  const names = players
+    .filter(p => p.color === 'w' || p.color === 'b')
+    .map(p => `${p.color === 'w' ? '⚪' : '⚫'} ${p.username}`)
+    .join('   vs   ');
+  document.getElementById('playersDisplay').textContent = names;
+});
