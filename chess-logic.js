@@ -136,4 +136,6 @@ function isCheckmate(state) {
   return isSquareAttacked(state.board, kr, kc, enemy);
 }
 
-module.exports = { createInitialBoard, getLegalMoves, makeMove, isCheckmate, isSquareAttacked, findKing };
+if (typeof module !== 'undefined') {
+  module.exports = { createInitialBoard, getLegalMoves, makeMove, isCheckmate, isSquareAttacked, findKing };
+}
