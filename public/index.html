@@ -1,16 +1,39 @@
-<!-- public/index.html -->
 <!DOCTYPE html>
 <html>
 <head>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <audio id="moveSound" src="https://lichess1.org/assets/sound/standard/Move.mp3"></audio>
-<audio id="captureSound" src="https://lichess1.org/assets/sound/standard/Capture.mp3"></audio>
-  <h1>Chess</h1>
-  <div id="board"></div>
-  <button onclick="resetGame()">Reset Game</button>
-  <p id="status"></p>
+
+  <!-- LOBBY SCREEN -->
+  <div id="lobby">
+    <h1>Chess</h1>
+    <input id="usernameInput" placeholder="Enter your username" maxlength="16">
+    <div id="lobbyButtons" style="display:none;">
+      <button onclick="createGame()">Create Game</button>
+      <div class="join-row">
+        <input id="roomCodeInput" placeholder="Room code" maxlength="6">
+        <button onclick="joinGame()">Join Game</button>
+      </div>
+      <button onclick="playOffline()">Play Offline (same device)</button>
+    </div>
+    <button id="setUsernameBtn" onclick="setUsername()">Continue</button>
+    <p id="lobbyStatus"></p>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game" style="display:none;">
+    <h1>Chess</h1>
+    <p id="roomCodeDisplay"></p>
+    <div id="board"></div>
+    <p id="status"></p>
+    <button onclick="resetGame()">Reset Game</button>
+    <button onclick="location.reload()">Leave Game</button>
+  </div>
+
+  <audio id="moveSound" src="https://lichess1.org/assets/sound/standard/Move.mp3"></audio>
+  <audio id="captureSound" src="https://lichess1.org/assets/sound/standard/Capture.mp3"></audio>
+
   <script src="chess-logic.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="client.js"></script>

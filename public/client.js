@@ -9,10 +9,54 @@ let state = { board: createInitialBoard(), turn: 'w' };
 let myColor = 'spectator';
 let selected = null;
 let legalMoves = [];
+let username = '';
+let offlineMode = false;
 
-socket.on('assigned-color', (color) => {
+// ---- LOBBY LOGIC ----
+function setUsername() {
+  const val = document.getElementById('usernameInput').value.trim();
+  if (!val) {
+    document.getElementById('lobbyStatus').textContent = 'Please enter a username';
+    return;
+  }
+  username = val;
+  document.getElementById('lobbyButtons').style.display = 'block';
+  document.getElementById('setUsernameBtn').style.display = 'none';
+  document.getElementById('usernameInput').disabled = true;
+}
+
+function createGame() {
+  socket.emit('create-game', { username });
+}
+
+function joinGame() {
+  const roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+  if (!roomCode) return;
+  socket.emit('join-game', { username, roomCode });
+}
+
+function playOffline() {
+  offlineMode = true;
+  myColor = 'both'; // special mode: allow moving both colors locally
+  state = { board: createInitialBoard(), turn: 'w' };
+  showGameScreen('Offline Mode');
+  render();
+}
+
+function showGameScreen(roomLabel) {
+  document.getElementById('lobby').style.display = 'none';
+  document.getElementById('game').style.display = 'block';
+  document.getElementById('roomCodeDisplay').textContent = roomLabel;
+}
+
+// ---- SOCKET EVENTS ----
+socket.on('joined-room', ({ roomCode, color }) => {
   myColor = color;
-  document.getElementById('status').textContent = `You are: ${color === 'spectator' ? 'Spectator' : color === 'w' ? 'White' : 'Black'}`;
+  showGameScreen(`Room Code: ${roomCode} — You are ${color === 'w' ? 'White' : color === 'b' ? 'Black' : 'Spectator'}`);
+});
+
+socket.on('join-error', (msg) => {
+  document.getElementById('lobbyStatus').textContent = msg;
 });
 
 socket.on('state-update', (newState) => {
@@ -26,6 +70,7 @@ socket.on('checkmate', () => {
   document.getElementById('status').textContent = 'Checkmate!';
 });
 
+// ---- BOARD RENDERING ----
 function pieceImg(piece) {
   const code = PIECE_CODE[piece.color][piece.type];
   return `https://lichess1.org/assets/piece/cburnett/${code}.svg`;
@@ -46,16 +91,24 @@ function render() {
       boardEl.appendChild(sq);
     }
   }
+  document.getElementById('status').textContent = `Turn: ${state.turn === 'w' ? 'White' : 'Black'}`;
 }
 
 function handleClick(r, c) {
   const piece = state.board[r][c];
+  const canMoveThisColor = offlineMode || (myColor === state.turn);
 
   if (selected) {
     const move = legalMoves.find(m => m.to[0]===r && m.to[1]===c);
     if (move) {
       const wasCapture = state.board[r][c] !== null;
-      socket.emit('attempt-move', { from: selected, to: [r, c] });
+
+      if (offlineMode) {
+        makeMove(state, selected, [r, c]);
+        if (isCheckmate(state)) document.getElementById('status').textContent = 'Checkmate!';
+      } else {
+        socket.emit('attempt-move', { from: selected, to: [r, c] });
+      }
 
       const soundId = wasCapture ? 'captureSound' : 'moveSound';
       document.getElementById(soundId).currentTime = 0;
@@ -68,7 +121,7 @@ function handleClick(r, c) {
     selected = null; legalMoves = [];
   }
 
-  if (piece && piece.color === myColor && myColor === state.turn) {
+  if (piece && canMoveThisColor && (offlineMode || piece.color === myColor)) {
     selected = [r, c];
     legalMoves = getLegalMoves(state.board, r, c, state);
   }
@@ -76,7 +129,10 @@ function handleClick(r, c) {
 }
 
 function resetGame() {
-  socket.emit('reset-game');
+  if (offlineMode) {
+    state = { board: createInitialBoard(), turn: 'w' };
+    render();
+  } else {
+    socket.emit('reset-game');
+  }
 }
-
-render();
