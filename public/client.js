@@ -12,6 +12,16 @@ let legalMoves = [];
 let username = '';
 let offlineMode = false;
 
+// check for saved username on page load
+const savedUsername = localStorage.getItem('chess-username');
+if (savedUsername) {
+  username = savedUsername;
+  document.getElementById('usernameInput').value = savedUsername;
+  document.getElementById('lobbyButtons').style.display = 'block';
+  document.getElementById('setUsernameBtn').style.display = 'none';
+  document.getElementById('usernameInput').disabled = true;
+}
+
 // ---- LOBBY LOGIC ----
 function setUsername() {
   const val = document.getElementById('usernameInput').value.trim();
@@ -20,6 +30,7 @@ function setUsername() {
     return;
   }
   username = val;
+  localStorage.setItem('chess-username', val); // <-- save it
   document.getElementById('lobbyButtons').style.display = 'block';
   document.getElementById('setUsernameBtn').style.display = 'none';
   document.getElementById('usernameInput').disabled = true;
@@ -66,8 +77,18 @@ socket.on('state-update', (newState) => {
   render();
 });
 
-socket.on('checkmate', () => {
-  document.getElementById('status').textContent = 'Checkmate!';
+socket.on('checkmate', ({ loserColor }) => {
+  if (offlineMode) {
+    document.getElementById('status').textContent = 'Checkmate!';
+    return;
+  }
+  if (myColor === loserColor) {
+    document.getElementById('status').textContent = 'Checkmate — You Lost';
+  } else if (myColor === 'spectator') {
+    document.getElementById('status').textContent = `Checkmate — ${loserColor === 'w' ? 'White' : 'Black'} lost`;
+  } else {
+    document.getElementById('status').textContent = 'Checkmate — You Won!';
+  }
 });
 
 // ---- BOARD RENDERING ----
@@ -104,9 +125,12 @@ function handleClick(r, c) {
       const wasCapture = state.board[r][c] !== null;
 
       if (offlineMode) {
-        makeMove(state, selected, [r, c]);
-        if (isCheckmate(state)) document.getElementById('status').textContent = 'Checkmate!';
-      } else {
+  makeMove(state, selected, [r, c]);
+  if (isCheckmate(state)) {
+    const loser = state.turn === 'w' ? 'White' : 'Black';
+    document.getElementById('status').textContent = `Checkmate — ${loser} lost`;
+  }
+} else {
         socket.emit('attempt-move', { from: selected, to: [r, c] });
       }
 
@@ -135,4 +159,9 @@ function resetGame() {
   } else {
     socket.emit('reset-game');
   }
+}
+
+function logout() {
+  localStorage.removeItem('chess-username');
+  location.reload();
 }

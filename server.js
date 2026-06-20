@@ -59,10 +59,10 @@ io.on('connection', (socket) => {
     if (!found) return;
 
     makeMove(room.state, from, to);
-    const checkmate = isCheckmate(room.state);
+const checkmate = isCheckmate(room.state);
 
-    io.to(currentRoom).emit('state-update', room.state);
-    if (checkmate) io.to(currentRoom).emit('checkmate');
+io.to(currentRoom).emit('state-update', room.state);
+if (checkmate) io.to(currentRoom).emit('checkmate', { loserColor: room.state.turn });
   });
 
   socket.on('reset-game', () => {
