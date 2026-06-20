@@ -26,26 +26,31 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at top, #1a1d26, var(--bg-dark) 70%);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(212,175,55,0.06), transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(120,90,200,0.08), transparent 45%),
+    radial-gradient(circle at top, #1a1d26, var(--bg-dark) 75%);
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
   color: var(--text-main);
-  padding: 24px 16px;
+  padding: 16px;
+  overflow-x: hidden;
 }
 
 h1 {
-  font-size: 2.2rem;
+  font-size: 1.8rem;
   font-weight: 700;
   margin: 0 0 4px;
   letter-spacing: 1px;
+  text-align: center;
 }
 
 h1::after {
   content: '';
   display: block;
-  width: 48px;
+  width: 40px;
   height: 3px;
   background: var(--accent);
-  margin: 10px auto 0;
+  margin: 8px auto 0;
   border-radius: 2px;
 }
 
@@ -53,21 +58,21 @@ h1::after {
 #lobby {
   text-align: center;
   background: var(--bg-panel);
-  padding: 36px 28px;
+  padding: 32px 26px;
   border-radius: var(--radius);
   box-shadow: 0 20px 60px rgba(0,0,0,0.5);
   width: 100%;
-  max-width: 360px;
+  max-width: 340px;
 }
 
 #lobby input {
-  padding: 12px 14px;
-  font-size: 1rem;
+  padding: 11px 14px;
+  font-size: 0.95rem;
   border-radius: 8px;
   border: 1px solid #2a2e38;
   background: #11141a;
   color: var(--text-main);
-  margin: 10px 0;
+  margin: 8px 0;
   width: 100%;
   outline: none;
   transition: border-color 0.15s ease;
@@ -82,9 +87,9 @@ h1::after {
 }
 
 #welcomeText {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--text-dim);
-  margin: 0 0 12px;
+  margin: 0 0 10px;
 }
 
 .logout-btn {
@@ -92,9 +97,9 @@ h1::after {
   color: var(--text-dim) !important;
   border: 1px solid #2a2e38 !important;
   font-weight: 500 !important;
-  padding: 8px 16px !important;
-  font-size: 0.85rem !important;
-  margin-bottom: 18px !important;
+  padding: 7px 14px !important;
+  font-size: 0.8rem !important;
+  margin-bottom: 14px !important;
 }
 
 .logout-btn:hover {
@@ -105,7 +110,7 @@ h1::after {
 .join-row {
   display: flex;
   gap: 8px;
-  margin: 12px 0;
+  margin: 10px 0;
 }
 
 .join-row input {
@@ -115,14 +120,14 @@ h1::after {
 #lobbyButtons button:not(.logout-btn) {
   display: block;
   width: 100%;
-  margin: 8px 0;
+  margin: 6px 0;
 }
 
 #lobbyStatus {
   color: #e06c6c;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   min-height: 1.2em;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 /* ---------- GAME SCREEN ---------- */
@@ -131,28 +136,33 @@ h1::after {
   flex-direction: column;
   align-items: center;
   width: 100%;
+  max-width: 520px;
+  gap: 4px;
 }
 
 #roomCodeDisplay {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: var(--text-dim);
-  margin: 0 0 4px;
+  margin: 0;
+  text-align: center;
 }
 
 #playersDisplay {
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 600;
-  margin: 0 0 14px;
+  margin: 0 0 8px;
+  text-align: center;
 }
 
 #status {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  margin: 14px 0;
-  padding: 8px 20px;
+  margin: 10px 0;
+  padding: 7px 18px;
   background: var(--bg-panel);
   border-radius: 20px;
   border: 1px solid #2a2e38;
+  text-align: center;
 }
 
 /* ---------- BOARD ---------- */
@@ -160,12 +170,13 @@ h1::after {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
   grid-template-rows: repeat(8, minmax(0, 1fr));
-  width: min(520px, 92vw);
+  width: min(440px, 90vw, 60vh);
   aspect-ratio: 1 / 1;
   border-radius: 6px;
   overflow: hidden;
   box-shadow: 0 24px 60px rgba(0,0,0,0.55);
-  border: 8px solid #23262f;
+  border: 6px solid #23262f;
+  margin: 0 auto;
 }
 
 .square {
@@ -208,8 +219,8 @@ h1::after {
 
 /* ---------- BUTTONS ---------- */
 button {
-  padding: 11px 22px;
-  font-size: 0.95rem;
+  padding: 9px 20px;
+  font-size: 0.9rem;
   border: none;
   border-radius: 8px;
   background: var(--accent);
@@ -229,17 +240,20 @@ button:active {
 }
 
 #game button {
-  margin: 6px 6px 0;
+  margin: 4px 4px 0;
 }
 
 /* ---------- MOBILE ---------- */
 @media (max-width: 480px) {
-  h1 { font-size: 1.7rem; }
-  #lobby { padding: 28px 20px; }
+  h1 { font-size: 1.5rem; }
+  #lobby { padding: 24px 18px; }
   .join-row { flex-direction: column; }
   #game button {
     width: 90%;
-    margin: 6px auto 0;
+    margin: 4px auto 0;
     display: block;
+  }
+  #board {
+    width: min(92vw, 55vh);
   }
 }

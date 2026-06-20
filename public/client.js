@@ -104,11 +104,11 @@ function render() {
   for (let r = 0; r < 8; r++) {
     for (let c = 0; c < 8; c++) {
       const sq = document.createElement('div');
-      sq.className = 'square ' + ((r+c)%2===0 ? 'light' : 'dark');
+      sq.className = 'square ' + ((r + c) % 2 === 0 ? 'light' : 'dark');
       const piece = state.board[r][c];
       if (piece) sq.innerHTML = `<img class="piece" src="${pieceImg(piece)}">`;
-      if (selected && selected[0]===r && selected[1]===c) sq.classList.add('selected');
-      if (legalMoves.some(m => m.to[0]===r && m.to[1]===c)) sq.classList.add('legal');
+      if (selected && selected[0] === r && selected[1] === c) sq.classList.add('selected');
+      if (legalMoves.some(m => m.to[0] === r && m.to[1] === c)) sq.classList.add('legal');
       sq.onclick = () => handleClick(r, c);
       boardEl.appendChild(sq);
     }
@@ -125,19 +125,28 @@ function handleClick(r, c) {
   const canMoveThisColor = offlineMode ? true : (myColor === state.turn);
 
   if (selected) {
-    const move = legalMoves.find(m => m.to[0]===r && m.to[1]===c);
+    const move = legalMoves.find(m => m.to[0] === r && m.to[1] === c);
     if (move) {
       const wasCapture = state.board[r][c] !== null;
 
       if (offlineMode) {
-        makeMove(state, selected, [r, c]);
-        if (isCheckmate(state)) {
-          gameOver = true;
-          const loser = state.turn === 'w' ? 'White' : 'Black';
-const winner = state.turn === 'w' ? 'Black' : 'White';
-document.getElementById('status').textContent = `Checkmate — ${winner} Wins`;
-        }
-        
+  makeMove(state, selected, [r, c]);
+
+  // DEBUG
+  console.log('Checking checkmate for:', state.turn);
+  const [kr, kc] = findKing(state.board, state.turn);
+  console.log('King at:', kr, kc);
+  console.log('King legal moves:', getLegalMoves(state.board, kr, kc, state));
+  console.log('isCheckmate result:', isCheckmate(state));
+
+  if (isCheckmate(state)) {
+    gameOver = true;
+    const loser = state.turn === 'w' ? 'White' : 'Black';
+    const winner = state.turn === 'w' ? 'Black' : 'White';
+    document.getElementById('status').textContent = `Checkmate — ${winner} Wins`;
+  }
+}
+
       } else {
         socket.emit('attempt-move', { from: selected, to: [r, c] });
       }
