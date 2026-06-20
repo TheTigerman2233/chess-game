@@ -147,7 +147,7 @@ function handleClick(r, c) {
   }
 }
 
-      } else {
+       else {
         socket.emit('attempt-move', { from: selected, to: [r, c] });
       }
 
