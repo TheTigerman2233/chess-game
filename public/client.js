@@ -32,7 +32,6 @@ function setUsername() {
   }
   username = val;
   localStorage.setItem('chess-username', val); // <-- save it
-  document.getElementById('welcomeText').textContent = `Welcome back, ${savedUsername}`;
   document.getElementById('welcomeText').textContent = `Welcome, ${val}`;
   document.getElementById('lobbyButtons').style.display = 'block';
   document.getElementById('setUsernameBtn').style.display = 'none';
@@ -135,8 +134,10 @@ function handleClick(r, c) {
         if (isCheckmate(state)) {
           gameOver = true;
           const loser = state.turn === 'w' ? 'White' : 'Black';
-          document.getElementById('status').textContent = `Checkmate — ${loser} lost`;
+const winner = state.turn === 'w' ? 'Black' : 'White';
+document.getElementById('status').textContent = `Checkmate — ${winner} Wins`;
         }
+        
       } else {
         socket.emit('attempt-move', { from: selected, to: [r, c] });
       }
