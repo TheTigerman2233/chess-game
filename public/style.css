@@ -170,7 +170,7 @@ h1::after {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
   grid-template-rows: repeat(8, minmax(0, 1fr));
-  width: min(440px, 90vw, 60vh);
+  width: min(560px, 92vw, 75vh);
   aspect-ratio: 1 / 1;
   border-radius: 6px;
   overflow: hidden;
@@ -254,6 +254,6 @@ button:active {
     display: block;
   }
   #board {
-    width: min(92vw, 55vh);
-  }
+  width: min(94vw, 65vh);
+}
 }

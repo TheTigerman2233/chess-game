@@ -113,7 +113,9 @@ function render() {
       boardEl.appendChild(sq);
     }
   }
+  if (!gameOver) {
   document.getElementById('status').textContent = `Turn: ${state.turn === 'w' ? 'White' : 'Black'}`;
+}
 }
 
 let gameOver = false;
@@ -131,13 +133,6 @@ function handleClick(r, c) {
 
       if (offlineMode) {
   makeMove(state, selected, [r, c]);
-
-  // DEBUG
-  console.log('Checking checkmate for:', state.turn);
-  const [kr, kc] = findKing(state.board, state.turn);
-  console.log('King at:', kr, kc);
-  console.log('King legal moves:', getLegalMoves(state.board, kr, kc, state));
-  console.log('isCheckmate result:', isCheckmate(state));
 
   if (isCheckmate(state)) {
     gameOver = true;
